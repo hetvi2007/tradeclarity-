@@ -20,4 +20,13 @@ if symbol:
         st.subheader(f"Stock Chart for {symbol.upper()}")
         fig, ax = plt.subplots()
         ax.plot(hist.index, hist["Close"], color="blue")
-        ax.set_title(f"{symbol.upper()} Pri_
+        ax.set_title(f"{symbol.upper()} Price Trend")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Close Price")
+        st.pyplot(fig)
+
+        # Stock Info
+        st.subheader("Key Info")
+        col1, col2 = st.columns(2)
+
+        with col1
