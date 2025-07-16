@@ -1,81 +1,70 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
 import matplotlib.pyplot as plt
 
-# --- Custom Neon + Black Theme ---
+# Inject custom CSS for dark theme with neon text
 st.markdown("""
-<style>
-.stApp {
-    background-color: #0d0d0d;
-    color: #39ff14;
-}
-
-html, body, [class*="css"] {
-    font-family: 'Courier New', monospace;
-    color: #39ff14;
-}
-
-h1, h2, h3, .st-bb, .st-at, .st-ae {
-    color: #39ff14 !important;
-    text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
-}
-
-div.stButton > button {
-    background-color: #111;
-    color: #39ff14;
-    border: 1px solid #39ff14;
-    border-radius: 8px;
-    padding: 8px 20px;
-    transition: 0.3s;
-}
-
-div.stButton > button:hover {
-    background-color: #39ff14;
-    color: black;
-}
-
-.css-1d391kg, .css-1dp5vir {
-    background-color: #121212 !important;
-    color: #39ff14;
-}
-</style>
+    <style>
+    body {
+        background-color: #000000;
+        color: #39ff14;
+    }
+    .stApp {
+        background-color: #000000;
+        color: #39ff14;
+        font-family: 'Courier New', monospace;
+    }
+    h1, h2, h3 {
+        color: #39ff14;
+    }
+    .css-1d391kg, .css-hxt7ib {
+        background-color: #111111;
+        color: #39ff14;
+        border: 1px solid #39ff14;
+        border-radius: 10px;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# --- Header ---
-st.markdown("<h1 style='text-align: center;'>🚀 <span style='color:#39ff14;'>TradeClarity</span></h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center;'>Making Trading Fun, Smart & Gen Z Ready</h3>", unsafe_allow_html=True)
+# Title
+st.markdown("<h1 style='text-align: center;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>Helping Gen Z make smarter trading decisions 💸</h3>", unsafe_allow_html=True)
+st.markdown("---")
 
-# --- Stock Input ---
-st.markdown("""
-### 🔍 Enter a stock symbol (e.g. `AAPL`, `TSLA`, `INFY.NS`, `TCS.NS`):
-""")
+# Stock input
+stock = st.text_input("🔍 Enter Stock Symbol (like AAPL, TSLA, INFY):", value="AAPL")
 
-stock_symbol = st.text_input("Stock Symbol", value="AAPL")
-
-if stock_symbol:
+# Fetch data
+if stock:
     try:
-        stock = yf.Ticker(stock_symbol)
-        info = stock.info
+        data = yf.Ticker(stock)
+        hist = data.history(period="6mo")
 
-        # --- Stock Info ---
-        st.subheader(f"📈 Overview of {info.get('shortName', stock_symbol)}")
-        st.write(f"**Market Cap**: ₹ {info.get('marketCap', 'N/A'):,}")
-        st.write(f"**52-Week High**: ₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
-        st.write(f"**52-Week Low**: ₹ {info.get('fiftyTwoWeekLow', 'N/A')}")
-        st.write(f"**PE Ratio**: {info.get('trailingPE', 'N/A')}")
-
-        # --- Historical Data ---
-        st.subheader("📊 Stock Price Chart")
-        df = stock.history(period="6mo")
-
-        plt.style.use("dark_background")
+        # Chart
+        st.subheader(f"📈 Stock Price Chart for {stock.upper()}")
         fig, ax = plt.subplots()
-        ax.plot(df.index, df['Close'], color='#39ff14', linewidth=2)
-        ax.set_title(f"{stock_symbol} Closing Price", color='#39ff14')
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Price")
+        ax.plot(hist.index, hist["Close"], color="#39ff14")
+        ax.set_facecolor("#000000")
+        fig.patch.set_facecolor('#000000')
+        ax.tick_params(colors='white')
         st.pyplot(fig)
 
+        # Stock Info
+        st.subheader("📌 Stock Snapshot")
+        info = data.info
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write(f"**Name**: {info.get('shortName', 'N/A')}")
+            st.write(f"**Sector**: {info.get('sector', 'N/A')}")
+            st.write(f"**Market Cap**: ₹ {info.get('marketCap', 'N/A')}")
+            st.write(f"**52-Week High**: ₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
+
+        with col2:
+            st.write(f"**Previous Close**: ₹ {info.get('previousClose', 'N/A')}")
+            st.write(f"**Open**: ₹ {info.get('open', 'N/A')}")
+            st.write(f"**Volume**: {info.get('volume', 'N/A')}")
+            st.write(f"**PE Ratio**: {info.get('trailingPE', 'N/A')}")
+
     except Exception as e:
-        st.error("Something went wrong! Check the stock symbol or try again.")
+        st.error("⚠️ Could not fetch data. Please check the stock symbol and try again.")
