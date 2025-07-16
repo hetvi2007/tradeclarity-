@@ -61,4 +61,4 @@ with tabs[2]:
 with tabs[3]:
     st.info("📰 News integration coming soon!")
 
-st.caption("Made with ❤️ using Streamlit")
+
