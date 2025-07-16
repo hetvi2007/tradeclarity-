@@ -1,78 +1,81 @@
 import streamlit as st
 import yfinance as yf
-import datetime
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# Page config
-st.set_page_config(page_title="TradeClarity", page_icon="📊", layout="centered")
-
+# --- Custom Neon + Black Theme ---
 st.markdown("""
-    <div style="text-align:center">
-        <h1 style="color:#6C63FF;">📊 TradeClarity</h1>
-        <h4 style="color:gray;">Helping Gen Z make smarter trading decisions</h4>
-        <hr style="border: 1px solid #ccc;">
-    </div>
-    """, unsafe_allow_html=True)
-
-# Popular stock list
-popular_stocks = {
-    "Apple (AAPL)": "AAPL",
-    "Google (GOOGL)": "GOOGL",
-    "Amazon (AMZN)": "AMZN",
-    "Tesla (TSLA)": "TSLA",
-    "Microsoft (MSFT)": "MSFT",
-    "Infosys (INFY)": "INFY.NS",
-    "TCS (TCS)": "TCS.NS",
-    "Reliance (RELIANCE)": "RELIANCE.NS",
-    "HDFC Bank (HDFCBANK)": "HDFCBANK.NS",
-    "ICICI Bank (ICICIBANK)": "ICICIBANK.NS"
+<style>
+.stApp {
+    background-color: #0d0d0d;
+    color: #39ff14;
 }
 
-# Selection method
-st.markdown("### 🎯 Choose a stock or enter manually:")
-selected = st.selectbox("Pick from popular stocks:", [""] + list(popular_stocks.keys()))
-manual_input = st.text_input("Or type a stock symbol (e.g., AAPL, TCS.NS):").upper()
+html, body, [class*="css"] {
+    font-family: 'Courier New', monospace;
+    color: #39ff14;
+}
 
-# Final ticker
-ticker = ""
-if selected:
-    ticker = popular_stocks[selected]
-elif manual_input:
-    ticker = manual_input
+h1, h2, h3, .st-bb, .st-at, .st-ae {
+    color: #39ff14 !important;
+    text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+}
 
-# Process and display
-if ticker:
+div.stButton > button {
+    background-color: #111;
+    color: #39ff14;
+    border: 1px solid #39ff14;
+    border-radius: 8px;
+    padding: 8px 20px;
+    transition: 0.3s;
+}
+
+div.stButton > button:hover {
+    background-color: #39ff14;
+    color: black;
+}
+
+.css-1d391kg, .css-1dp5vir {
+    background-color: #121212 !important;
+    color: #39ff14;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# --- Header ---
+st.markdown("<h1 style='text-align: center;'>🚀 <span style='color:#39ff14;'>TradeClarity</span></h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>Making Trading Fun, Smart & Gen Z Ready</h3>", unsafe_allow_html=True)
+
+# --- Stock Input ---
+st.markdown("""
+### 🔍 Enter a stock symbol (e.g. `AAPL`, `TSLA`, `INFY.NS`, `TCS.NS`):
+""")
+
+stock_symbol = st.text_input("Stock Symbol", value="AAPL")
+
+if stock_symbol:
     try:
-        stock = yf.Ticker(ticker)
+        stock = yf.Ticker(stock_symbol)
         info = stock.info
 
-        st.subheader(f"📈 {info.get('longName', ticker)}")
+        # --- Stock Info ---
+        st.subheader(f"📈 Overview of {info.get('shortName', stock_symbol)}")
+        st.write(f"**Market Cap**: ₹ {info.get('marketCap', 'N/A'):,}")
+        st.write(f"**52-Week High**: ₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
+        st.write(f"**52-Week Low**: ₹ {info.get('fiftyTwoWeekLow', 'N/A')}")
+        st.write(f"**PE Ratio**: {info.get('trailingPE', 'N/A')}")
 
-        col1, col2 = st.columns(2)
+        # --- Historical Data ---
+        st.subheader("📊 Stock Price Chart")
+        df = stock.history(period="6mo")
 
-        with col1:
-            st.metric("💵 Current Price", f"₹ {info.get('currentPrice', 'N/A')}")
-            st.metric("📈 52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
-            st.metric("📉 52-Week Low", f"₹ {info.get('fiftyTwoWeekLow', 'N/A')}")
-
-        with col2:
-            st.metric("🏢 Market Cap", f"₹ {info.get('marketCap', 'N/A')}")
-            st.metric("📊 Volume", f"{info.get('volume', 'N/A')}")
-            st.metric("📐 PE Ratio", f"{info.get('trailingPE', 'N/A')}")
-
-        st.subheader("📅 Stock Price Chart (Last 6 Months)")
-        today = datetime.date.today()
-        six_months_ago = today - datetime.timedelta(days=180)
-        hist_data = stock.history(start=six_months_ago, end=today)
-
-        if not hist_data.empty:
-            st.line_chart(hist_data['Close'])
-        else:
-            st.warning("No chart data available for this stock.")
-
-        st.caption("💡 This is not financial advice. Always do your own research!")
+        plt.style.use("dark_background")
+        fig, ax = plt.subplots()
+        ax.plot(df.index, df['Close'], color='#39ff14', linewidth=2)
+        ax.set_title(f"{stock_symbol} Closing Price", color='#39ff14')
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price")
+        st.pyplot(fig)
 
     except Exception as e:
-        st.error(f"⚠️ Error loading data: {e}")
-else:
-    st.info("👆 Select or enter a stock symbol to continue.")
-
+        st.error("Something went wrong! Check the stock symbol or try again.")
