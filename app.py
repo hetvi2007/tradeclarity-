@@ -7,12 +7,14 @@ st.set_page_config(page_title="TradeClarity", layout="wide")
 
 st.markdown("<h1 style='color:#00bfff;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
 
-# Define sectors and related stocks
+# Define sectors and related stocks (expanded list)
 sectors = {
-    "Technology": ["AAPL", "MSFT", "GOOGL", "NVDA"],
-    "Healthcare": ["JNJ", "PFE", "MRK", "ABT"],
-    "Financials": ["JPM", "BAC", "WFC", "GS"],
-    "Energy": ["XOM", "CVX", "BP", "TOT"]
+    "Technology": ["AAPL", "MSFT", "GOOGL", "NVDA", "AMD", "INTC", "CRM", "ORCL"],
+    "Healthcare": ["JNJ", "PFE", "MRK", "ABT", "UNH", "LLY", "BMY", "CVS"],
+    "Financials": ["JPM", "BAC", "WFC", "GS", "MS", "C", "AXP", "BLK"],
+    "Energy": ["XOM", "CVX", "BP", "TOT", "COP", "PSX", "EOG", "SLB"],
+    "Consumer Discretionary": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "LOW", "TGT"],
+    "Industrials": ["BA", "CAT", "GE", "MMM", "HON", "LMT", "UPS", "FDX"]
 }
 
 st.sidebar.title("🔎 Select Sector & Stock")
@@ -60,5 +62,3 @@ with tabs[2]:
 
 with tabs[3]:
     st.info("📰 News integration coming soon!")
-
-
