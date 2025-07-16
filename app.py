@@ -1,42 +1,35 @@
 import streamlit as st
 import yfinance as yf
-from datetime import date, timedelta
 
-# ----------------- PAGE CONFIG ----------------- #
-st.set_page_config(
-    page_title="TradeClarity",
-    page_icon="📈",
-    layout="centered"
-)
+st.set_page_config(page_title="TradeClarity", layout="wide")
 
-# ----------------- HEADER ----------------- #
-st.title("📊 TradeClarity")
-st.caption("Gen Z’s guide to smarter trading 💡")
+st.title("📈 TradeClarity – Smart Trading Insights for Gen Z")
 
-st.markdown("""
-Welcome to **TradeClarity** – a lightweight, beginner-friendly stock insight tool made *for Gen Z, by Gen Z*.  
-Check charts, explore trends, and avoid beginner mistakes in style.
-""")
+st.write("Welcome! Enter a stock symbol below to get simplified, real-time data and make smarter trading decisions.")
 
-# ----------------- USER INPUT ----------------- #
-ticker = st.text_input("🔍 Enter a stock symbol (e.g., AAPL, TSLA, TCS):", "AAPL")
+# User input
+ticker_symbol = st.text_input("🔍 Enter a Stock Symbol (e.g., AAPL, TSLA, INFY):")
 
-# ----------------- DATE RANGE ----------------- #
-end = date.today()
-start = end - timedelta(days=30)
-
-# ----------------- FETCH DATA ----------------- #
-if ticker:
+if ticker_symbol:
     try:
-        stock = yf.Ticker(ticker)
-        hist = stock.history(start=start, end=end)
+        stock = yf.Ticker(ticker_symbol)
+        info = stock.info
 
-        if not hist.empty:
-            st.subheader(f"📅 Last 30 Days: {ticker.upper()}")
-            st.line_chart(hist["Close"])
+        st.subheader(f"📊 Snapshot: {info.get('shortName', ticker_symbol)}")
+        
+        st.write({
+            "📌 Current Price": info.get("currentPrice", "N/A"),
+            "📈 52-Week High": info.get("fiftyTwoWeekHigh", "N/A"),
+            "📉 52-Week Low": info.get("fiftyTwoWeekLow", "N/A"),
+            "💰 Market Cap": info.get("marketCap", "N/A"),
+            "🧮 PE Ratio": info.get("trailingPE", "N/A")
+        })
 
-            st.subheader("📉 Key Stats")
-            info = stock.info
-            st.write({
-                "Current Price": info.get("currentPrice", "N/A"),
-                "52-Week High": info.get("fiftyTwoWeekH
+        st.markdown("---")
+        st.subheader("📅 Price History (Last 6 Months)")
+
+        hist = stock.history(period="6mo")
+        st.line_chart(hist["Close"])
+
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
