@@ -69,4 +69,16 @@ if symbol:
             st.metric("Previous Close", f"₹ {info.get('previousClose', 'N/A')}")
             st.metric("Open", f"₹ {info.get('open', 'N/A')}")
             st.metric("52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
-            st.metric("52-Week Low", f"₹
+            st.metric("52-Week Low", f"₹ {info.get('fiftyTwoWeekLow', 'N/A')}")
+
+        with col2:
+            st.metric("PE Ratio", info.get('trailingPE', 'N/A'))
+            st.metric("EPS", info.get('trailingEps', 'N/A'))
+            st.metric("Volume", f"{info.get('volume', 'N/A'):,}")
+            st.metric("Dividend Yield", info.get('dividendYield', 'N/A'))
+            st.metric("Exchange", info.get('exchange', 'N/A'))
+
+    except Exception as e:
+        st.error("Error fetching data. Please check the symbol or try again.")
+else:
+    st.info("Enter a stock symbol to begin.")
