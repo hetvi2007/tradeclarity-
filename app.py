@@ -37,4 +37,6 @@ st.write(f"**PE Ratio**: {info.get('trailingPE', 'N/A')}")
 st.write(f"**Dividend Yield**: {info.get('dividendYield', 'N/A')}")
 
 # Optional: Show chart
-st.subheader("�
+st.subheader("📈 Price Chart")
+hist = stock.history(period="6mo")
+st.line_chart(hist['Close'])
