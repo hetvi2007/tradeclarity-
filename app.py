@@ -29,4 +29,11 @@ if symbol:
         st.subheader("Key Info")
         col1, col2 = st.columns(2)
 
-        with col1
+        with col1:
+            st.write(f"**Name**: {info.get('shortName', 'N/A')}")
+            st.write(f"**Sector**: {info.get('sector', 'N/A')}")
+            st.write(f"**Market Cap**: ₹ {info.get('marketCap', 'N/A')}")
+            st.write(f"**52-Week High**: ₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
+
+        with col2:
+            st.write(f"**Previous Close**: ₹ {info.get('
