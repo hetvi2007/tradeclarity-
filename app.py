@@ -1,75 +1,64 @@
 import streamlit as st
 import yfinance as yf
-import pandas as pd
 import plotly.graph_objs as go
+import pandas as pd
 
-# ----- PAGE CONFIG -----
 st.set_page_config(page_title="TradeClarity", layout="wide")
 
-# ----- HEADER -----
-st.markdown("<h1 style='color:#4A90E2;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:#00bfff;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
 
-# ----- STOCK SELECTION -----
-stock_options = {
-    "Apple Inc. (AAPL)": "AAPL",
-    "Tesla Inc. (TSLA)": "TSLA",
-    "Amazon.com Inc. (AMZN)": "AMZN",
-    "Microsoft Corporation (MSFT)": "MSFT",
-    "Google (Alphabet Inc. - GOOGL)": "GOOGL",
-    "NVIDIA Corporation (NVDA)": "NVDA",
-    "Reliance Industries (RELIANCE.NS)": "RELIANCE.NS",
-    "Tata Consultancy Services (TCS.NS)": "TCS.NS",
-    "Infosys Limited (INFY.NS)": "INFY.NS",
-    "HDFC Bank Limited (HDFCBANK.NS)": "HDFCBANK.NS"
+# Define sectors and related stocks
+sectors = {
+    "Technology": ["AAPL", "MSFT", "GOOGL", "NVDA"],
+    "Healthcare": ["JNJ", "PFE", "MRK", "ABT"],
+    "Financials": ["JPM", "BAC", "WFC", "GS"],
+    "Energy": ["XOM", "CVX", "BP", "TOT"]
 }
 
-selected_company = st.selectbox("📈 Choose a Stock", list(stock_options.keys()))
-symbol = stock_options[selected_company]
+st.sidebar.title("🔎 Select Sector & Stock")
+selected_sector = st.sidebar.selectbox("Choose Sector", list(sectors.keys()))
+symbol_list = sectors[selected_sector]
+selected_symbol = st.sidebar.selectbox("Choose Stock", symbol_list)
 
-# ----- FETCH DATA -----
-ticker = yf.Ticker(symbol)
+# Fetch data
+ticker = yf.Ticker(selected_symbol)
+data = ticker.history(period="6mo")
 info = ticker.info
 
-df = ticker.history(period="6mo")
+# Candlestick chart
+fig = go.Figure(data=[go.Candlestick(
+    x=data.index,
+    open=data['Open'],
+    high=data['High'],
+    low=data['Low'],
+    close=data['Close'],
+    name="Candlestick"
+)])
+fig.update_layout(title=f"{selected_symbol} - 6 Month Candlestick Chart", xaxis_title="Date", yaxis_title="Price (INR)", template="plotly_dark")
 
-# ----- TABS -----
-tab1, tab2 = st.tabs(["📊 Overview", "📉 Chart"])
+# Layout with tabs
+tabs = st.tabs(["Overview", "Chart", "Predictions (Coming Soon)", "News (Coming Soon)"])
 
-# ----- OVERVIEW -----
-with tab1:
-    st.subheader(f"{selected_company} - Stock Overview")
-
+with tabs[0]:
+    st.subheader(f"Overview: {selected_symbol}")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Previous Close", f"₹ {info.get('previousClose', 'N/A'):,}")
-        st.metric("Open", f"₹ {info.get('open', 'N/A'):,}")
+        st.metric("Previous Close", f"₹ {info.get('previousClose', 'N/A')}")
+        st.metric("Open", f"₹ {info.get('open', 'N/A')}")
     with col2:
-        st.metric("Day's High", f"₹ {info.get('dayHigh', 'N/A'):,}")
-        st.metric("Day's Low", f"₹ {info.get('dayLow', 'N/A'):,}")
+        st.metric("Day High", f"₹ {info.get('dayHigh', 'N/A')}")
+        st.metric("Day Low", f"₹ {info.get('dayLow', 'N/A')}")
     with col3:
-        market_cap = info.get('marketCap')
-        st.metric("Market Cap", f"₹ {market_cap:,}" if market_cap else "N/A")
-        st.metric("52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A'):,}")
-        st.metric("52-Week Low", f"₹ {info.get('fiftyTwoWeekLow', 'N/A'):,}")
+        st.metric("Market Cap", f"₹ {info.get('marketCap', 'N/A'):,}" if info.get('marketCap') else "N/A")
+        st.metric("52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
 
-# ----- CHART -----
-with tab2:
-    st.subheader(f"{symbol} - Candlestick Chart (6M)")
-    
-    fig = go.Figure(data=[go.Candlestick(
-        x=df.index,
-        open=df['Open'],
-        high=df['High'],
-        low=df['Low'],
-        close=df['Close'],
-        name=symbol
-    )])
-    
-    fig.update_layout(
-        xaxis_rangeslider_visible=False,
-        template="plotly_white",
-        margin=dict(t=20, b=20),
-        height=500
-    )
-    
+with tabs[1]:
     st.plotly_chart(fig, use_container_width=True)
+
+with tabs[2]:
+    st.info("📈 Prediction features coming soon!")
+
+with tabs[3]:
+    st.info("📰 News integration coming soon!")
+
+st.caption("Made with ❤️ using Streamlit")
