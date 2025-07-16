@@ -1,72 +1,75 @@
 import streamlit as st
 import yfinance as yf
+import pandas as pd
 import plotly.graph_objs as go
-from datetime import date, timedelta
 
-# --- PAGE SETUP ---
+# ----- PAGE CONFIG -----
 st.set_page_config(page_title="TradeClarity", layout="wide")
 
-# --- HEADER ---
-st.markdown("<h1 style='color:cyan;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color:gray;'>Smarter stock insights for everyone</p>", unsafe_allow_html=True)
+# ----- HEADER -----
+st.markdown("<h1 style='color:#4A90E2;'>📊 TradeClarity</h1>", unsafe_allow_html=True)
 
-# --- SIDEBAR ---
-st.sidebar.header("Select Stock")
-symbol = st.sidebar.text_input("Enter Stock Symbol (e.g. AAPL, TCS.NS, INFY.NS)", "AAPL")
+# ----- STOCK SELECTION -----
+stock_options = {
+    "Apple Inc. (AAPL)": "AAPL",
+    "Tesla Inc. (TSLA)": "TSLA",
+    "Amazon.com Inc. (AMZN)": "AMZN",
+    "Microsoft Corporation (MSFT)": "MSFT",
+    "Google (Alphabet Inc. - GOOGL)": "GOOGL",
+    "NVIDIA Corporation (NVDA)": "NVDA",
+    "Reliance Industries (RELIANCE.NS)": "RELIANCE.NS",
+    "Tata Consultancy Services (TCS.NS)": "TCS.NS",
+    "Infosys Limited (INFY.NS)": "INFY.NS",
+    "HDFC Bank Limited (HDFCBANK.NS)": "HDFCBANK.NS"
+}
 
-# Download data
-today = date.today()
-start_date = today - timedelta(days=365)
+selected_company = st.selectbox("📈 Choose a Stock", list(stock_options.keys()))
+symbol = stock_options[selected_company]
 
-try:
-    data = yf.download(symbol, start=start_date, end=today)
-    info = yf.Ticker(symbol).info
-except:
-    st.error("Failed to fetch data. Please check the stock symbol.")
-    st.stop()
+# ----- FETCH DATA -----
+ticker = yf.Ticker(symbol)
+info = ticker.info
 
-# --- TABS ---
-tab1, tab2, tab3 = st.tabs(["📈 Overview", "📊 Chart", "🔮 Predictions (Coming Soon)"])
+df = ticker.history(period="6mo")
 
-# --- OVERVIEW TAB ---
+# ----- TABS -----
+tab1, tab2 = st.tabs(["📊 Overview", "📉 Chart"])
+
+# ----- OVERVIEW -----
 with tab1:
-    st.subheader("Company Overview")
+    st.subheader(f"{selected_company} - Stock Overview")
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Market Cap", f"₹ {info.get('marketCap', 'N/A'):,}")
-        st.metric("Previous Close", f"₹ {info.get('previousClose', 'N/A')}")
+        st.metric("Previous Close", f"₹ {info.get('previousClose', 'N/A'):,}")
+        st.metric("Open", f"₹ {info.get('open', 'N/A'):,}")
     with col2:
-        st.metric("52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
-        st.metric("52-Week Low", f"₹ {info.get('fiftyTwoWeekLow', 'N/A')}")
+        st.metric("Day's High", f"₹ {info.get('dayHigh', 'N/A'):,}")
+        st.metric("Day's Low", f"₹ {info.get('dayLow', 'N/A'):,}")
     with col3:
-        st.metric("PE Ratio", f"{info.get('trailingPE', 'N/A')}")
-        st.metric("Dividend Yield", f"{info.get('dividendYield', 'N/A')}")
+        market_cap = info.get('marketCap')
+        st.metric("Market Cap", f"₹ {market_cap:,}" if market_cap else "N/A")
+        st.metric("52-Week High", f"₹ {info.get('fiftyTwoWeekHigh', 'N/A'):,}")
+        st.metric("52-Week Low", f"₹ {info.get('fiftyTwoWeekLow', 'N/A'):,}")
 
-# --- CHART TAB ---
+# ----- CHART -----
 with tab2:
-    st.subheader("Candlestick Chart")
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=data.index,
-                open=data["Open"],
-                high=data["High"],
-                low=data["Low"],
-                close=data["Close"],
-                increasing_line_color="cyan",
-                decreasing_line_color="magenta"
-            )
-        ]
-    )
+    st.subheader(f"{symbol} - Candlestick Chart (6M)")
+    
+    fig = go.Figure(data=[go.Candlestick(
+        x=df.index,
+        open=df['Open'],
+        high=df['High'],
+        low=df['Low'],
+        close=df['Close'],
+        name=symbol
+    )])
+    
     fig.update_layout(
         xaxis_rangeslider_visible=False,
-        plot_bgcolor="black",
-        paper_bgcolor="black",
-        font=dict(color="white"),
-        height=600
+        template="plotly_white",
+        margin=dict(t=20, b=20),
+        height=500
     )
+    
     st.plotly_chart(fig, use_container_width=True)
-
-# --- PREDICTIONS TAB (Placeholder) ---
-with tab3:
-    st.info("Prediction tools coming soon! Stay tuned.")
