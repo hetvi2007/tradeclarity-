@@ -36,4 +36,10 @@ if symbol:
             st.write(f"**52-Week High**: ₹ {info.get('fiftyTwoWeekHigh', 'N/A')}")
 
         with col2:
-            st.write(f"**Previous Close**: ₹ {info.get('
+            st.write(f"**Previous Close**: ₹ {info.get('previousClose', 'N/A')}")
+            st.write(f"**Open**: ₹ {info.get('open', 'N/A')}")
+            st.write(f"**Volume**: {info.get('volume', 'N/A')}")
+            st.write(f"**PE Ratio**: {info.get('trailingPE', 'N/A')}")
+
+    except Exception as e:
+        st.error("⚠️ Could not load stock data. Please check the symbol and your internet connection.")
